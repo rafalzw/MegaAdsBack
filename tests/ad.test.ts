@@ -2,6 +2,15 @@ import {AdRecord} from "../records/ad.record";
 import {pool} from "../utils/db";
 import {AdEntity} from "../types";
 
+const defaultObj = {
+    name: 'Tester',
+    description: 'Praca',
+    url: 'https://interia.pl',
+    price: 13,
+    lat: 9022,
+    lon: 93369,
+};
+
 afterAll(async ()=> {
     await pool.end();
 })
@@ -39,15 +48,22 @@ test('AdRecord.findAll returns smaller amount of data.', async () => {
 });
 
 
-test('Add new record to database', async () => {
-    const obj = new AdRecord({
-        name: 'Tester',
-        description: 'Praca',
-        url: 'https://interia.pl',
-        price: 13,
-        lat: 9022,
-        lon: 93369,
-    })
+test('AddRecord.insert returns new UUID', async () => {
+    const ad = new AdRecord(defaultObj);
 
-    await obj.insert();
+    await ad.insert();
+
+    expect(ad.id).toBeDefined();
+    expect(typeof ad.id).toBe('string');
+});
+
+test('AddRecord.insert inserts data to database.', async () => {
+    const ad = new AdRecord(defaultObj);
+    await ad.insert();
+
+    const foundAd = await AdRecord.getOne(ad.id);
+
+    expect(foundAd).toBeDefined();
+    expect(foundAd).not.toBeNull();
+    expect(foundAd.id).toBe(ad.id);
 });
